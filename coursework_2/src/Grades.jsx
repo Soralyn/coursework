@@ -2,6 +2,13 @@ import React, { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+  } from "@/components/ui/select"
+import {
   Table,
   TableBody,
   TableCaption,
@@ -102,8 +109,8 @@ const Grades = () => {
             }),
         })
             .then(() => {
-                setEditGradeId(null);
-                setStudentId("");
+                setEditGradeId(null)    ;
+                // setStudentId("");
                 setSubjectId("");
                 setGrade("");
                 setDate("");
@@ -120,8 +127,8 @@ const Grades = () => {
     };
 
     return (
-        <div>
-            <h1>Оценки</h1>
+        <div className="mx-20">
+            <h1 className='font-bold text-3xl'>Оценки</h1>
             <Table>
                 <TableHeader>
                     <TableRow>
@@ -134,12 +141,12 @@ const Grades = () => {
                 </TableHeader>
                 <TableBody>
                     {grades.map((grade) => (
-                        <TableRow key={grade.id}>
-                            <TableCell>{grade.student_name}</TableCell>
-                            <TableCell>{grade.subject_name}</TableCell>
-                            <TableCell>{grade.grade}</TableCell>
-                            <TableCell>{grade.date}</TableCell>
-                            <TableCell>
+                        <TableRow key={grade.id} className='border'>
+                            <TableCell className='border-r'>{grade.student_name}</TableCell>
+                            <TableCell className='border-r'>{grade.subject_name}</TableCell>
+                            <TableCell className='border-r'>{grade.grade}</TableCell>
+                            <TableCell className='border-r'>{grade.date}</TableCell>
+                            <TableCell className='border-r'>
                                 <Button onClick={() => startEditing(grade)} className="mr-2">
                                     Изменить
                                 </Button>
@@ -152,32 +159,47 @@ const Grades = () => {
                 </TableBody>
             </Table>
 
-            <h2>{editGradeId ? "Редактировать оценку" : "Добавить новую оценку"}</h2>
-            <div>
+            <h2 className='font-bold text-3xl mt-10 my-5'>{editGradeId ? "Редактировать оценку" : "Добавить новую оценку"}</h2>
+            <div className='mb-5'>
                 <label>Ученик:</label>
-                <select value={studentId} onChange={(e) => setStudentId(e.target.value)}>
-                    <option value="">Выберите ученика</option>
-                    {students.map((student) => (
-                        <option key={student.id} value={student.id}>
-                            {student.name}
-                        </option>
-                    ))}
-                </select>
+                <Select value={studentId} onValueChange={setStudentId}>
+                    <SelectTrigger>
+                        <SelectValue placeholder="Выберите студента"/>
+                    </SelectTrigger>
+
+                    <SelectContent>
+                        {
+                            students.map((student) => (
+                                <SelectItem key={student.id} value={student.id}>
+                                    {student.name}
+                                </SelectItem>
+                            ))
+                        }
+                    </SelectContent>
+                </Select>
             </div>
 
-            <div>
+            <div className='mb-5'>
                 <label>Предмет:</label>
-                <select value={subjectId} onChange={(e) => setSubjectId(e.target.value)}>
-                    <option value="">Выберите предмет</option>
-                    {subjects.map((subject) => (
-                        <option key={subject.id} value={subject.id}>
-                            {subject.name}
-                        </option>
-                    ))}
-                </select>
+
+                <Select value={subjectId} onValueChange={setSubjectId}>
+                    <SelectTrigger>
+                        <SelectValue placeholder="Выберите предмет"/>
+                    </SelectTrigger>
+
+                    <SelectContent>
+                        {
+                            subjects.map((subject) => (
+                                <SelectItem key={subject.id} value={subject.id}>
+                                    {subject.name}
+                                </SelectItem>
+                            ))
+                        }
+                    </SelectContent>
+                </Select>
             </div>
 
-            <div>
+            <div className='mb-5'>
                 <label>Оценка:</label>
                 <Input
                     type="number"
@@ -207,7 +229,7 @@ const Grades = () => {
                     Добавить
                 </Button>
             )}
-            <Button onClick={exportGrades} className="my-1 mx-1">
+            <Button onClick={exportGrades} variant='positive' className="my-1 mx-1">
                 Экспорт в Excel
             </Button>
         </div>

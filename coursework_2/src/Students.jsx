@@ -94,14 +94,32 @@ const Students = () => {
             })
             .catch((error) => console.error("Ошибка при сохранении изменений:", error));
     };
-    
+
+    function onSubmit(e, submitType) {
+        e.preventDefault()
+
+        if (submitType === 'save') {
+            return saveChanges()
+        }
+
+        return addStudent()
+    }
+
     return (
-        <div>
-            <h2>Учащиеся</h2>
-            <Table>
+        <div
+            className='mx-20'
+        >
+            <h2 className='my-4 text-3xl'>
+                <b>
+                    Учащиеся
+                </b>
+            </h2>
+            <Table className='mb-4'>
                 <TableHeader>
                     <TableRow>
                         <TableHead>Имя</TableHead>
+                        <TableHead></TableHead>
+                        <TableHead></TableHead>
                         <TableHead>Класс</TableHead>
                         <TableHead>Телефон</TableHead>
                         <TableHead>Действия</TableHead>
@@ -109,11 +127,11 @@ const Students = () => {
                 </TableHeader>
                 <TableBody>
                     {students.map((student) => (
-                        <TableRow key={student.id}>
-                            <TableCell>{student.name}</TableCell>
-                            <TableCell>{student.class_id}</TableCell>
-                            <TableCell>{student.phone}</TableCell>
-                            <TableCell>
+                        <TableRow key={student.id} className='border'>
+                            <TableCell className='border-r' colSpan={3}>{student.name}</TableCell>
+                            <TableCell className='border-r'>{student.class_id}</TableCell>
+                            <TableCell className='border-r'>{student.phone}</TableCell>
+                            <TableCell className='border-r'>
                                 <Button onClick={() => startEditing(student)} className="my-1 mx-1">
                                     Изменить
                                 </Button>
@@ -126,33 +144,53 @@ const Students = () => {
                 </TableBody>
             </Table>
 
-            <h2>{editStudentId ? "Редактировать студента" : "Добавить нового ученика"}</h2>
-            <Input
-                type="text"
-                placeholder="Имя"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="my-1 mx-1"
-            />
-            <Input
-                type="text"
-                placeholder="Класс"
-                value={classId}
-                onChange={(e) => setClassId(e.target.value)}
-                className="my-1 mx-1"
-            />
-            <Input
-                type="text"
-                placeholder="Телефон"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                className="my-1 mx-1"
-            />
-            {editStudentId ? (
-                <Button onClick={saveChanges}>Сохранить изменения</Button>
-            ) : (
-                <Button onClick={addStudent}>Добавить</Button>
-            )}
+            <div>
+                <h2 className='text-2xl'>
+                    <b>
+                        {editStudentId ? "Редактировать студента" : "Добавить нового ученика"}
+                    </b>
+                </h2>
+
+                <form
+                    className='my-5'
+                    onSubmit={(e) => onSubmit(e, editStudentId ? 'save' : 'add')}
+                >
+                    <Input
+                        type="text"
+                        placeholder="Имя"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        className="my-1 mx-1"
+                        required
+                    />
+                    <Input
+                        type="text"
+                        placeholder="Класс"
+                        value={classId}
+                        onChange={(e) => setClassId(e.target.value)}
+                        className="my-1 mx-1"
+                        required
+                    />
+                    <Input
+                        type="text"
+                        placeholder="Телефон"
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                        className="my-1 mx-1"
+                        required
+                    />
+
+                    <div
+                        className='mt-4'
+                    >
+                        {editStudentId ? (
+                            <Button type='submit'>Сохранить изменения</Button>
+                        ) : (
+                            <Button type='submit'>Добавить</Button>
+                        )}
+                    </div>
+                </form>
+            </div>
         </div>
     );
 };
