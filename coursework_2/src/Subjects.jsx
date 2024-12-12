@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react"; 
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -81,9 +81,20 @@ const Subjects = () => {
             .catch((error) => console.error("Ошибка при сохранении изменений:", error));
     };
 
+    function onSubmit(e, submitType) {
+        e.preventDefault()
+
+        if (submitType === 'save') {
+            return saveChanges()
+        }
+
+        return addSubject()
+    }
+
+
     return (
-        <div>
-            <h1>Предметы</h1>
+        <div className="mx-10">
+            <h1 className="font-bold text-3xl">Предметы</h1>
             <Table>
                 <TableHeader>
                     <TableRow>
@@ -93,9 +104,9 @@ const Subjects = () => {
                 </TableHeader>
                 <TableBody>
                     {subjects.map((subject) => (
-                        <TableRow key={subject.id}>
-                            <TableCell>{subject.name}</TableCell>
-                            <TableCell>
+                        <TableRow key={subject.id} className='border'>
+                            <TableCell className='border-r'>{subject.name}</TableCell>
+                            <TableCell className='border-r'>
                                 <Button
                                     onClick={() => startEditing(subject)}
                                     className="mr-2"
@@ -114,23 +125,26 @@ const Subjects = () => {
                 </TableBody>
             </Table>
 
-            <h2>{editSubjectId ? "Редактировать предмет" : "Добавить новый предмет"}</h2>
-            <Input
-                type="text"
-                placeholder="Название предмета"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="my-0.5 mx-1"
-            />
-            {editSubjectId ? (
-                <Button onClick={saveChanges} className="my-3 mx-2.5">
-                    Сохранить изменения
-                </Button>
-            ) : (
-                <Button onClick={addSubject} className="my-3 mx-2.5">
-                    Добавить
-                </Button>
-            )}
+            <h2 className="font-bold text-3xl mt-10">{editSubjectId ? "Редактировать предмет" : "Добавить новый предмет"}</h2>
+            <form onSubmit={e => onSubmit(e, editSubjectId ? 'save' : 'add')}className="mt-5">
+                <Input
+                    type="text"
+                    placeholder="Название предмета"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="my-0.5 mx-1"
+                    required
+                />
+                {editSubjectId ? (
+                    <Button type='submit' className="my-3 mx-2.5">
+                        Сохранить изменения
+                    </Button>
+                ) : (
+                    <Button type='submit' className="my-3 mx-2.5">
+                        Добавить
+                    </Button>
+                )}
+            </form>
         </div>
     );
 };
