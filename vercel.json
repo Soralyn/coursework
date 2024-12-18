@@ -1,0 +1,13 @@
+{
+  "rewrites": [
+    { "source": "/server/(.*)", "destination": "/server/app.py" },
+    { "source": "/coursework/(.*)", "destination": "/coursework/build/index.html" }
+  ], 
+  "functions": {
+    "server/*": {
+      "runtime": "python3.9",
+      "handler": "app.py",
+      "buildCommand": "./build.sh"
+    }
+  }
+}
