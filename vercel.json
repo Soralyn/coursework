@@ -3,10 +3,11 @@
     { "source": "/server/(.*)", "destination": "/server/app.py" },
     { "source": "/coursework/(.*)", "destination": "/coursework/build/index.html" }
   ], 
-  "functions": {
-    "server/*": {
-      "runtime": "python3.9",
-      "buildCommand": "./build.sh"
-    }
-  }
+
+//  "functions": {
+//    "server/*": {
+  //    "runtime": "python3.9",
+    //  "buildCommand": "./build.sh"
+    //}
+//  }
 }
