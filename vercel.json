@@ -6,7 +6,6 @@
   "functions": {
     "server/*": {
       "runtime": "python3.9",
-      "handler": "app.py",
       "buildCommand": "./build.sh"
     }
   }
