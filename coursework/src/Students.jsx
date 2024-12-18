@@ -111,7 +111,7 @@ const Students = () => {
         >
             <h2 className='my-4 text-3xl'>
                 <b>
-                    Учащиеся
+                    Студенты
                 </b>
             </h2>
             <Table className='mb-4'>
@@ -120,7 +120,7 @@ const Students = () => {
                         <TableHead>Имя</TableHead>
                         <TableHead></TableHead>
                         <TableHead></TableHead>
-                        <TableHead>Класс</TableHead>
+                        <TableHead>Группа</TableHead>
                         <TableHead>Телефон</TableHead>
                         <TableHead>Действия</TableHead>
                     </TableRow>
@@ -147,7 +147,7 @@ const Students = () => {
             <div>
                 <h2 className='text-2xl'>
                     <b>
-                        {editStudentId ? "Редактировать студента" : "Добавить нового ученика"}
+                        {editStudentId ? "Редактировать студента" : "Добавить студента"}
                     </b>
                 </h2>
 
@@ -165,7 +165,7 @@ const Students = () => {
                     />
                     <Input
                         type="text"
-                        placeholder="Класс"
+                        placeholder="Группа"
                         value={classId}
                         onChange={(e) => setClassId(e.target.value)}
                         className="my-1 mx-1"

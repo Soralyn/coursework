@@ -6,6 +6,7 @@ from wx.adv import CalendarCtrl
 conn = sqlite3.connect("school_performance.db")
 cursor = conn.cursor()
 
+# Создание таблиц, если их нет
 cursor.execute('''
 CREATE TABLE IF NOT EXISTS Students (
     id INTEGER PRIMARY KEY,
@@ -31,14 +32,19 @@ CREATE TABLE IF NOT EXISTS Grades (
     FOREIGN KEY (subject_id) REFERENCES Subjects(id)
 )''')
 
-conn.commit()
+cursor.execute('''
+CREATE TABLE IF NOT EXISTS Groups (
+    id INTEGER PRIMARY KEY,
+    name TEXT NOT NULL
+)''')
 
+conn.commit()
 
 class SchoolApp(wx.Frame):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.SetTitle("Школьные оценки")
+        self.SetTitle("Успеваемость студентов")
         self.SetSize(900, 600)
         self.SetBackgroundColour("#f4f4f4")
 
@@ -58,7 +64,7 @@ class SchoolApp(wx.Frame):
         self.init_grades_panel()
         
     def update_student_combobox(self):
-        """Обновляет список учеников в комбобоксе"""
+        """Обновляет список студентов в комбобоксе"""
         cursor.execute("SELECT id, name FROM Students")
         students = [f"{row[0]} - {row[1]}" for row in cursor.fetchall()]
         self.grade_student.SetItems(students)
@@ -74,11 +80,11 @@ class SchoolApp(wx.Frame):
         sizer = wx.BoxSizer(wx.VERTICAL)
 
         grid_sizer = wx.FlexGridSizer(3, 2, 10, 10)
-        grid_sizer.Add(wx.StaticText(panel, label="Имя ученика:"), 0, wx.ALIGN_CENTER_VERTICAL)
+        grid_sizer.Add(wx.StaticText(panel, label="Имя Студента:"), 0, wx.ALIGN_CENTER_VERTICAL)
         self.student_name = wx.TextCtrl(panel)
         grid_sizer.Add(self.student_name, 1, wx.EXPAND)
 
-        grid_sizer.Add(wx.StaticText(panel, label="Класс:"), 0, wx.ALIGN_CENTER_VERTICAL)
+        grid_sizer.Add(wx.StaticText(panel, label="Группа:"), 0, wx.ALIGN_CENTER_VERTICAL)
         self.student_class = wx.TextCtrl(panel)
         grid_sizer.Add(self.student_class, 1, wx.EXPAND)
 
@@ -88,14 +94,14 @@ class SchoolApp(wx.Frame):
         
         sizer.Add(grid_sizer, 0, wx.ALL | wx.EXPAND, 10)
 
-        add_button = wx.Button(panel, label="Добавить ученика")
+        add_button = wx.Button(panel, label="Добавить Студента")
         add_button.Bind(wx.EVT_BUTTON, self.add_student)
         sizer.Add(add_button, 0, wx.ALL | wx.ALIGN_CENTER, 10)
 
         self.students_grid = wx.grid.Grid(panel)
         self.students_grid.CreateGrid(0, 3)
         self.students_grid.SetColLabelValue(0, "Имя")
-        self.students_grid.SetColLabelValue(1, "Класс")
+        self.students_grid.SetColLabelValue(1, "Группа")
         self.students_grid.SetColLabelValue(2, "Телефон")
         self.students_grid.AutoSizeColumns()
         sizer.Add(self.students_grid, 1, wx.ALL | wx.EXPAND, 10)
@@ -132,7 +138,7 @@ class SchoolApp(wx.Frame):
         sizer = wx.BoxSizer(wx.VERTICAL)
 
         grid_sizer = wx.FlexGridSizer(4, 2, 10, 10)
-        grid_sizer.Add(wx.StaticText(panel, label="Ученик:"), 0, wx.ALIGN_CENTER_VERTICAL)
+        grid_sizer.Add(wx.StaticText(panel, label="Студент:"), 0, wx.ALIGN_CENTER_VERTICAL)
         self.grade_student = wx.ComboBox(panel, choices=[])
         grid_sizer.Add(self.grade_student, 1, wx.EXPAND)
 
@@ -156,7 +162,7 @@ class SchoolApp(wx.Frame):
 
         self.grades_grid = wx.grid.Grid(panel)
         self.grades_grid.CreateGrid(0, 4)
-        self.grades_grid.SetColLabelValue(0, "Ученик")
+        self.grades_grid.SetColLabelValue(0, "Студент")
         self.grades_grid.SetColLabelValue(1, "Предмет")
         self.grades_grid.SetColLabelValue(2, "Оценка")
         self.grades_grid.SetColLabelValue(3, "Дата")
@@ -171,11 +177,17 @@ class SchoolApp(wx.Frame):
         class_id = self.student_class.GetValue()
         phone = self.student_phone.GetValue()
         if name and class_id:
+            # проверка групп
+            cursor.execute("SELECT id FROM Groups WHERE id = ?", (class_id,))
+            group = cursor.fetchone()
+            if not group:
+                cursor.execute("INSERT INTO Groups (id, name) VALUES (?, ?)", (class_id, f"Group {class_id}"))
+            #должно добавлять студентв
             cursor.execute("INSERT INTO Students (name, class_id, phone) VALUES (?, ?, ?)", (name, class_id, phone))
             conn.commit()
             self.view_students()
             self.update_student_combobox()  # Обновляем список учеников
-            wx.MessageBox("Ученик добавлен!", "Успех", wx.OK | wx.ICON_INFORMATION)
+            wx.MessageBox("Студент и группа добавлены!", "Успех", wx.OK | wx.ICON_INFORMATION)
         else:
             wx.MessageBox("Заполните обязательные поля", "Ошибка", wx.OK | wx.ICON_WARNING)
 
@@ -185,7 +197,7 @@ class SchoolApp(wx.Frame):
             cursor.execute("INSERT INTO Subjects (name) VALUES (?)", (name,))
             conn.commit()
             self.view_subjects()
-            self.update_subject_combobox()  # Обновляем список предметов
+            self.update_subject_combobox()  # обновления предметов
             wx.MessageBox("Предмет добавлен!", "Успех", wx.OK | wx.ICON_INFORMATION)
         else:
             wx.MessageBox("Введите название предмета", "Ошибка", wx.OK | wx.ICON_WARNING)

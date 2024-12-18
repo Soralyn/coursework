@@ -28,7 +28,7 @@ const Grades = () => {
     const [date, setDate] = useState("");
     const [editGradeId, setEditGradeId] = useState(null);
 
-    // Получение списка оценок, учеников и предметов
+    // получение списка оценок, студентов и предметов
     useEffect(() => {
         fetch("http://127.0.0.1:5000/grades")
             .then((response) => response.json())
@@ -38,7 +38,7 @@ const Grades = () => {
         fetch("http://127.0.0.1:5000/students")
             .then((response) => response.json())
             .then((data) => setStudents(data))
-            .catch((error) => console.error("Ошибка при загрузке учеников:", error));
+            .catch((error) => console.error("Ошибка при загрузке студентов:", error));
 
         fetch("http://127.0.0.1:5000/subjects")
             .then((response) => response.json())
@@ -46,7 +46,7 @@ const Grades = () => {
             .catch((error) => console.error("Ошибка при загрузке предметов:", error));
     }, []);
 
-    // Добавление новой оценки
+    // добавление оценки
     const addGrade = () => {
         fetch("http://127.0.0.1:5000/grades", {
             method: "POST",
@@ -66,7 +66,7 @@ const Grades = () => {
                 setSubjectId("");
                 setGrade("");
                 setDate("");
-                // Обновить список оценок
+                // обновить оценоки
                 fetch("http://127.0.0.1:5000/grades")
                     .then((response) => response.json())
                     .then((data) => setGrades(data));
@@ -74,7 +74,7 @@ const Grades = () => {
             .catch((error) => console.error("Ошибка при добавлении оценки:", error));
     };
 
-    // Удаление оценки
+    // удаление оценки
     const deleteGrade = (id) => {
         fetch(`http://127.0.0.1:5000/grades/${id}`, {
             method: "DELETE",
@@ -85,7 +85,7 @@ const Grades = () => {
             .catch((error) => console.error("Ошибка при удалении оценки:", error));
     };
 
-    // Начать редактирование оценки
+    // редактирование оценки
     const startEditing = (grade) => {
         setEditGradeId(grade.id);
         setStudentId(grade.student_id);
@@ -94,7 +94,7 @@ const Grades = () => {
         setDate(grade.date);
     };
 
-    // Сохранить изменения оценки
+    // сохранить изменения оценки
     const saveChanges = () => {
         fetch(`http://127.0.0.1:5000/grades/${editGradeId}`, {
             method: "PUT",
@@ -132,7 +132,7 @@ const Grades = () => {
             <Table>
                 <TableHeader>
                     <TableRow>
-                        <TableHead>Ученик</TableHead>
+                        <TableHead>Студент</TableHead>
                         <TableHead>Предмет</TableHead>
                         <TableHead>Оценка</TableHead>
                         <TableHead>Дата</TableHead>
@@ -161,7 +161,7 @@ const Grades = () => {
 
             <h2 className='font-bold text-3xl mt-10 my-5'>{editGradeId ? "Редактировать оценку" : "Добавить новую оценку"}</h2>
             <div className='mb-5'>
-                <label>Ученик:</label>
+                <label>Студент:</label>
                 <Select value={studentId} onValueChange={setStudentId}>
                     <SelectTrigger>
                         <SelectValue placeholder="Выберите студента"/>

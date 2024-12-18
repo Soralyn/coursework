@@ -21,6 +21,10 @@ class Subject(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
 
+class Group(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+
 class Grade(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     student_id = db.Column(db.Integer, db.ForeignKey('student.id'), nullable=False)
@@ -36,10 +40,16 @@ def students():
         return jsonify([{'id': s.id, 'name': s.name, 'class_id': s.class_id, 'phone': s.phone} for s in students])
     elif request.method == 'POST':
         data = request.json
+        # проверка группы
+        group = Group.query.filter_by(id=data['class_id']).first()
+        if not group:
+            new_group = Group(id=data['class_id'], name=f"Группа {data['class_id']}")
+            db.session.add(new_group)
+        # добавляет студента
         student = Student(name=data['name'], class_id=data['class_id'], phone=data['phone'])
         db.session.add(student)
         db.session.commit()
-        return jsonify({'message': 'Student added'}), 201
+        return jsonify({'message': 'Student and Group added if necessary'}), 201
 
 @app.route('/students/<int:id>', methods=['DELETE', 'PUT'])
 def modify_student(id):
@@ -48,9 +58,19 @@ def modify_student(id):
         return jsonify({'message': 'Student not found'}), 404
 
     if request.method == 'DELETE':
+        class_id = student.class_id
         db.session.delete(student)
         db.session.commit()
-        return jsonify({'message': 'Student deleted'}), 200
+
+        # проверка студентов в группе
+        remaining_students = Student.query.filter_by(class_id=class_id).count()
+        if remaining_students == 0:
+            group = Group.query.filter_by(id=class_id).first()
+            if group:
+                db.session.delete(group)
+                db.session.commit()
+
+        return jsonify({'message': 'Student deleted and group cleaned if empty'}), 200
 
     elif request.method == 'PUT':
         data = request.json
@@ -60,6 +80,36 @@ def modify_student(id):
         db.session.commit()
         return jsonify({'message': 'Student updated'}), 200
 
+
+@app.route('/groups', methods=['GET', 'POST'])
+def groups():
+    if request.method == 'GET':
+        groups = Group.query.all()
+        return jsonify([{'id': s.id, 'name': s.name} for s in groups])
+    elif request.method == 'POST':
+        data = request.json
+        group = Group(name=data['name'])
+        db.session.add(group)
+        db.session.commit()
+        return jsonify({'message': 'Group added'}), 201 
+
+@app.route('/groups/<int:id>', methods=['DELETE', 'PUT'])
+def modify_group(id):
+    group = Group.query.get(id)
+    if not group:
+        return jsonify({'message': 'Группа не найдена'}), 404
+
+    if request.method == 'DELETE':
+        db.session.delete(group)
+        db.session.commit()
+        return jsonify({'message': 'Группа удалена'}), 200
+
+    elif request.method == 'PUT':
+        data = request.json
+        group.name = data.get('name', group.name)
+        db.session.commit()
+        return jsonify({'message': 'Группа обновлена'}), 200
+    
 # Эндпоинты для предметов
 @app.route('/subjects', methods=['GET', 'POST'])
 def subjects():
@@ -144,6 +194,52 @@ def modify_grade(id):
         grade.date = data.get('date', grade.date)
         db.session.commit()
         return jsonify({'message': 'Grade updated'}), 200
+
+    #ТЕСТ ЭНДПОИНТА ДЛЯ РАССЧЕТА ОЦЕНОК
+@app.route('/grades/period', methods=['POST'])
+def grades_for_period():
+    data = request.json
+    start_date = data.get('start_date')
+    end_date = data.get('end_date')
+    student_id = data.get('student_id')
+    subject_id = data.get('subject_id')
+
+    if not start_date or not end_date:
+        return jsonify({'message': 'Both start_date and end_date are required'}), 400
+
+    query = db.session.query(
+        Student.name.label('student_name'),
+        Subject.name.label('subject_name'),
+        Grade.grade,
+        Grade.date
+    ).join(Student, Grade.student_id == Student.id)\
+     .join(Subject, Grade.subject_id == Subject.id)\
+     .filter(Grade.date >= start_date, Grade.date <= end_date)
+    
+    if student_id:
+        query = query.filter(Grade.student_id == student_id)
+    if subject_id:
+        query = query.filter(Grade.subject_id == subject_id)
+
+    grades = query.all()
+
+    result = [
+        {
+            'student_name': grade.student_name,
+            'subject_name': grade.subject_name,
+            'grade': grade.grade,
+            'date': grade.date
+        }
+        for grade in grades
+    ]
+
+    return jsonify(result)
+
+#ТЕСТ ЭНДПОИНТА ГРУПП
+@app.route('/groups/<int:group_id>/students', methods=['GET'])
+def students_in_group(group_id):
+    students = Student.query.filter_by(class_id=group_id).all()
+    return jsonify([{'id': s.id, 'name': s.name, 'phone': s.phone} for s in students])
 
 # Эндпоинт для экспорта оценок
 @app.route('/export/grades', methods=['GET'])
